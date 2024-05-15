@@ -79,16 +79,26 @@ func NewRunOptions() *RunOptions {
 
 // Run runs the kcl run command with options.
 func (o *RunOptions) Run() error {
+	result, err := o.RunWithResult()
+	if err != nil {
+		return err
+	}
+
+	return o.writeResult(result)
+}
+
+// RunWithResult runs the kcl run command with options and returns the result.
+func (o *RunOptions) RunWithResult() (*kcl.KCLResultList, error) {
 	var result *kcl.KCLResultList
 	var err error
 	cli, err := client.NewKpmClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// acquire the lock of the package cache.
 	err = cli.AcquirePackageCacheLock()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		// release the lock of the package cache after the function returns.
@@ -102,15 +112,15 @@ func (o *RunOptions) Run() error {
 		cli.SetLogWriter(nil)
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 	entry, errEvent := runner.FindRunEntryFrom(opts.Entries())
 	if errEvent != nil {
-		return errEvent
+		return nil, errEvent
 	}
 	pwd, err := os.Getwd()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if entry.IsEmpty() {
 		// kcl compiles the current package under '$pwd'.
@@ -121,7 +131,7 @@ func (o *RunOptions) Run() error {
 			// TODO: refactor the entry search logic.
 			depsOpt, depErr := LoadDepsFrom(pwd, o.Quiet)
 			if depErr != nil {
-				return err
+				return nil, err
 			}
 			opts.Merge(*depsOpt)
 			result, err = api.RunWithOpt(opts)
@@ -131,7 +141,7 @@ func (o *RunOptions) Run() error {
 		if entry.IsLocalFile() {
 			depsOpt, depErr := LoadDepsFrom(pwd, o.Quiet)
 			if depErr != nil {
-				return err
+				return nil, err
 			}
 			opts.Merge(*depsOpt)
 			result, err = api.RunWithOpt(opts)
@@ -142,7 +152,7 @@ func (o *RunOptions) Run() error {
 				if !filepath.IsAbs(entry) {
 					entry, err = filepath.Abs(entry)
 					if err != nil {
-						return err
+						return nil, err
 					}
 				}
 				transformedEntries = append(transformedEntries, entry)
@@ -186,9 +196,9 @@ func (o *RunOptions) Run() error {
 		if o.NoStyle {
 			err = errors.New(stripansi.Strip(err.Error()))
 		}
-		return err
+		return nil, err
 	}
-	return o.writeResult(result)
+	return result, nil
 }
 
 // Complete completes the options based on the provided arguments.
