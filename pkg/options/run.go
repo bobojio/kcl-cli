@@ -89,11 +89,21 @@ func NewRunOptions() *RunOptions {
 
 // Run runs the kcl run command with options.
 func (o *RunOptions) Run() error {
+	result, err := o.RunWithResult()
+	if err != nil {
+		return err
+	}
+
+	return o.writeResult(result)
+}
+
+// RunWithResult runs the kcl run command with options and returns the result.
+func (o *RunOptions) RunWithResult() (*kcl.KCLResultList, error) {
 	var result *kcl.KCLResultList
 	var err error
 	cli, err := client.NewKpmClient()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if o.Quiet {
 		cli.SetLogWriter(nil)
@@ -101,7 +111,7 @@ func (o *RunOptions) Run() error {
 	// Acquire the lock of the package cache.
 	err = cli.AcquirePackageCacheLock()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer func() {
 		// release the lock of the package cache after the function returns.
@@ -143,13 +153,13 @@ func (o *RunOptions) Run() error {
 		if o.NoStyle {
 			err = errors.New(stripansi.Strip(err.Error()))
 		}
-		return err
+		return nil, err
 	}
 	// Remove temp entries
 	for _, entry := range tempEntries {
 		_ = os.Remove(entry)
 	}
-	return o.writeResult(result)
+	return result, nil
 }
 
 // Complete completes the options based on the provided arguments.
