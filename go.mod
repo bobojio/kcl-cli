@@ -1,4 +1,4 @@
-module github.com/bobojio/kcl-cli
+module kcl-lang.io/cli
 
 go 1.22.4
 

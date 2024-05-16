@@ -89,7 +89,7 @@ func NewRunOptions() *RunOptions {
 
 // Run runs the kcl run command with options.
 func (o *RunOptions) Run() error {
-	result, err := o.RunWithResult()
+	result, err := o.RunWithResultList()
 	if err != nil {
 		return err
 	}
@@ -97,8 +97,8 @@ func (o *RunOptions) Run() error {
 	return o.writeResult(result)
 }
 
-// RunWithResult runs the kcl run command with options and returns the result.
-func (o *RunOptions) RunWithResult() (*kcl.KCLResultList, error) {
+// RunWithResultList runs the kcl run command with options and returns the result.
+func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 	var result *kcl.KCLResultList
 	var err error
 	cli, err := client.NewKpmClient()
