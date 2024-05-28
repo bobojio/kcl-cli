@@ -107,6 +107,8 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 	}
 	if o.Quiet {
 		cli.SetLogWriter(nil)
+	} else {
+		cli.SetLogWriter(o.Writer)
 	}
 	// Acquire the lock of the package cache.
 	err = cli.AcquirePackageCacheLock()
@@ -126,7 +128,7 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 		if entry == "-" {
 			entry, err := fs.GenTempFileFromStdin()
 			if err != nil {
-				return err
+				return nil, err
 			}
 			tempEntries = append(tempEntries, entry)
 			o.Entries[i] = entry
@@ -392,6 +394,7 @@ func CompileOptionFromCli(o *RunOptions) *opt.CompileOptions {
 
 	// Set logger to show the kcl values of the print function.
 	opts.Merge(kcl.WithLogger(o.Writer))
+	opts.SetLogWriter(o.Writer)
 
 	return opts
 }
