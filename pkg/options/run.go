@@ -95,6 +95,9 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 	if err != nil {
 		return nil, err
 	}
+	if o.Quiet {
+		cli.SetLogWriter(nil)
+	}
 	// acquire the lock of the package cache.
 	err = cli.AcquirePackageCacheLock()
 	if err != nil {
@@ -108,9 +111,6 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 		}
 	}()
 	opts := CompileOptionFromCli(o)
-	if o.Quiet {
-		cli.SetLogWriter(nil)
-	}
 	if err != nil {
 		return nil, err
 	}
