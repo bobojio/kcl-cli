@@ -97,6 +97,8 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 	}
 	if o.Quiet {
 		cli.SetLogWriter(nil)
+	} else {
+		cli.SetLogWriter(o.Writer)
 	}
 	// acquire the lock of the package cache.
 	err = cli.AcquirePackageCacheLock()
@@ -180,7 +182,7 @@ func (o *RunOptions) RunWithResultList() (*kcl.KCLResultList, error) {
 			result, err = cli.CompileTarPkg(entry.PackageSource(), opts)
 		} else if entry.IsGit() {
 			opts.SetEntries([]string{})
-			gitOpts := git.NewCloneOptions(entry.PackageSource(), "", o.Tag, "", "", nil)
+			gitOpts := git.NewCloneOptions(entry.PackageSource(), "", o.Tag, "", "", o.Writer)
 			// compiles the package from the git url
 			result, err = cli.CompileGitPkg(gitOpts, opts)
 		} else if entry.IsUrl() {
@@ -322,6 +324,7 @@ func CompileOptionFromCli(o *RunOptions) *opt.CompileOptions {
 
 	// Set logger to show the kcl values of the print function.
 	opts.Merge(kcl.WithLogger(o.Writer))
+	opts.SetLogWriter(o.Writer)
 
 	return opts
 }
