@@ -31,6 +31,8 @@ var (
 	vendor     bool
 	update     bool
 	git        string
+	oci        string
+	path       string
 	tag        string
 	commit     string
 	branch     string
@@ -49,7 +51,7 @@ func NewModCmd() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "quiet (no output)")
+	cmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Set the quiet mode (no output)")
 
 	reporter.InitReporter()
 	cli, err := client.NewKpmClient()
